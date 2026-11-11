@@ -5,7 +5,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'none'; script-src 'sha256-pXPdCLffMAY2X57lob+++GcorUx1nTkj1sA4j7W2G7U='; style-src 'sha256-pPBLz0vrpvciq/JAUnTV0rMdgM7aO8ZZuVX5eyXgDB4='; img-src 'self'; media-src 'self' blob: mediastream:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+          "value": "default-src 'none'; script-src 'sha256-JfhdWBPDaOwlECDGUA3hZuv4NbZd71VpUW94NX2/g2c='; style-src 'sha256-bO4713G2SF90Y8uDo50g982+IDyx1astVYH7yRK8mWA='; img-src 'self'; media-src 'self' blob: mediastream:; manifest-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
         },
         {
           "key": "X-Frame-Options",

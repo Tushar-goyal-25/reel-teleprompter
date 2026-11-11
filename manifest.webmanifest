@@ -3,8 +3,8 @@
   "short_name": "Prompter",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#000000",
-  "theme_color": "#000000",
+  "background_color": "#F3F5FB",
+  "theme_color": "#F3F5FB",
   "icons": [
     {
       "src": "/icon-512.png",

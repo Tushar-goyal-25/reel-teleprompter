@@ -4,123 +4,172 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#000">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F3F5FB">
 <title>Prompter</title>
-<meta name="description" content="Teleprompter for recording reels on your phone">
+<meta name="description" content="A teleprompter that keeps your words right under the lens while you record.">
 <link rel="icon" href="/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <style>
+:root{--bg:#F3F5FB;--card:#FFFFFF;--line:#E1E6F4;--ink:#161A2E;--muted:#6B7190;--cue:#3B5BFF;--cue-soft:#E8ECFF;--rec:#FF3B4E;
+  --font:ui-rounded,"SF Pro Rounded","Nunito",system-ui,-apple-system,sans-serif}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:var(--font);overflow:hidden}
 .hide{display:none!important}
-#edit{height:100%;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)}
-h1{font-size:22px;margin-bottom:12px;display:flex;align-items:center;gap:10px}h1 img{width:34px;height:34px;border-radius:9px}
-textarea{flex:1;width:100%;background:#111;color:#fff;border:1px solid #333;border-radius:12px;padding:14px;font-size:17px;resize:none;outline:none}
-.row{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px}
-.row label{width:70px;color:#aaa}
-.row input{flex:1;accent-color:#ff3b30}
-.row span{width:36px;text-align:right}
-button{font:inherit;border:0;border-radius:12px;cursor:pointer}
-.primary{margin-top:16px;padding:16px;background:#ff3b30;color:#fff;font-size:18px;font-weight:600;width:100%}
-#rec{position:fixed;inset:0}
-video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-#prompt{position:absolute;top:0;left:0;right:0;height:24%;padding-top:env(safe-area-inset-top);background:linear-gradient(#000b 75%,#0000);overflow:hidden;
- -webkit-mask-image:linear-gradient(#0003,#000 35%,#000 55%,#0003);mask-image:linear-gradient(#0003,#000 35%,#000 55%,#0003)}
-#text{max-width:min(72vw,300px);margin:0 auto;text-align:center;padding:12vh 0 100vh;font-weight:600;line-height:1.35;white-space:pre-wrap;will-change:transform}
-#bar{position:absolute;bottom:0;left:0;right:0;padding:16px 20px calc(env(safe-area-inset-bottom) + 20px);display:flex;align-items:center;justify-content:space-between}
-.ghost{background:#0008;color:#fff;padding:12px 14px;font-size:15px;min-width:70px}
-#recBtn{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:transparent;display:grid;place-items:center}
-#recBtn i{display:block;width:56px;height:56px;border-radius:50%;background:#ff3b30;transition:.2s}
-#recBtn.on i{width:30px;height:30px;border-radius:8px}
-#count{position:absolute;inset:0;display:grid;place-items:center;font-size:120px;font-weight:700;text-shadow:0 4px 20px #000;pointer-events:none}
-#timer{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 112px);left:50%;transform:translateX(-50%);background:#ff3b30;padding:4px 10px;border-radius:8px;font-size:14px;font-variant-numeric:tabular-nums}
-#chunk{position:absolute;top:calc(env(safe-area-inset-top) + 20px);left:50%;transform:translateX(-50%);width:min(78vw,320px);text-align:center;font-weight:700;line-height:1.25;background:#000b;border-radius:14px;padding:10px 14px;min-height:1.5em}
-select{flex:1;background:#111;color:#fff;border:1px solid #333;border-radius:8px;padding:8px;font-size:15px}
-#done{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px);gap:12px}
-#done video{position:static;transform:none;flex:1;min-height:0;object-fit:contain;border-radius:12px;background:#111}
-#done .primary{margin:0}
-.sec{padding:14px;background:#222;color:#fff;font-size:16px}
+button,input,textarea{font:inherit;color:inherit}
+button{border:0;cursor:pointer}
+:focus-visible{outline:3px solid var(--cue);outline-offset:2px}
+
+/* edit */
+#edit{height:100%;display:flex;flex-direction:column;gap:14px;max-width:560px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 18px)}
+header{display:flex;align-items:center;gap:12px}
+header img{width:44px;height:44px;border-radius:12px;box-shadow:0 1px 0 var(--line),0 6px 16px #3b5bff1f}
+header h1{font-size:24px;font-weight:700;letter-spacing:-.01em}
+header p{font-size:14px;color:var(--muted)}
+.sheet{flex:1;min-height:0;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden}
+textarea{flex:1;width:100%;border:0;background:transparent;padding:18px;font-size:18px;line-height:1.5;resize:none;outline:none}
+textarea::placeholder{color:#A4AAC4}
+.meta{padding:10px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+.controls{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:6px 16px}
+.ctl{display:flex;align-items:center;gap:12px;min-height:52px}
+.ctl+.ctl{border-top:1px solid var(--line)}
+.ctl label,.ctl>span:first-child{width:78px;font-size:15px;color:var(--muted)}
+.ctl output{width:32px;text-align:right;font-variant-numeric:tabular-nums;font-size:15px}
+input[type=range]{flex:1;accent-color:var(--cue)}
+.seg{flex:1;display:flex;background:var(--bg);border-radius:12px;padding:3px}
+.seg input{position:absolute;opacity:0;pointer-events:none}
+.seg label{flex:1;width:auto;text-align:center;padding:9px 6px;border-radius:9px;font-size:15px;color:var(--muted);cursor:pointer}
+.seg input:checked+label{background:var(--card);color:var(--ink);font-weight:600;box-shadow:0 1px 3px #161a2e1a}
+.seg input:focus-visible+label{outline:3px solid var(--cue)}
+.go{padding:17px;border-radius:18px;background:var(--cue);color:#fff;font-size:18px;font-weight:700;box-shadow:0 8px 20px #3b5bff40}
+.go:active{transform:scale(.99)}
+
+/* record */
+#rec{position:fixed;inset:0;background:#000}
+#cam{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
+.glass{background:#ffffffd9;-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);color:var(--ink)}
+#prompt{position:absolute;top:0;left:0;right:0;height:25%;padding-top:env(safe-area-inset-top);overflow:hidden;border-radius:0 0 26px 26px;
+  -webkit-mask-image:linear-gradient(#0004,#000 38%,#000 58%,#0004);mask-image:linear-gradient(#0004,#000 38%,#000 58%,#0004)}
+#text{max-width:min(72vw,300px);margin:0 auto;text-align:center;padding:12vh 0 100vh;font-weight:650;line-height:1.35;white-space:pre-wrap;will-change:transform}
+#chunk{position:absolute;top:calc(env(safe-area-inset-top) + 18px);left:50%;transform:translateX(-50%);width:min(80vw,330px);
+  text-align:center;font-weight:700;line-height:1.25;border-radius:22px;padding:14px 16px;min-height:1.6em;box-shadow:0 10px 30px #0003}
+#progress{position:absolute;left:0;bottom:0;height:3px;background:var(--cue);width:0}
+#bar{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(env(safe-area-inset-bottom) + 22px);display:flex;align-items:center;justify-content:space-between}
+.pill{padding:12px 16px;border-radius:999px;font-size:15px;font-weight:600;min-width:76px}
+#recBtn{width:78px;height:78px;border-radius:50%;background:#ffffffe6;display:grid;place-items:center;box-shadow:0 6px 20px #0004}
+#recBtn i{display:block;width:58px;height:58px;border-radius:50%;background:var(--rec);transition:all .2s}
+#recBtn.on i{width:28px;height:28px;border-radius:8px}
+#count{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none}
+#count span{width:128px;height:128px;border-radius:50%;display:grid;place-items:center;font-size:64px;font-weight:700}
+#timer{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 118px);left:50%;transform:translateX(-50%);padding:5px 12px;border-radius:999px;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:7px}
+#timer::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--rec)}
+
+/* done */
+#done{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;gap:12px;max-width:560px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 18px)}
+#done h2{font-size:22px}
+#out{flex:1;min-height:0;width:100%;object-fit:contain;border-radius:22px;background:#E4E8F5}
+.sec{padding:16px;border-radius:18px;background:var(--card);border:1px solid var(--line);font-size:17px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
 
 <section id="edit">
-  <h1><img src="/icon.svg" alt="">Prompter</h1>
-  <textarea id="script" placeholder="Paste your reel script here…"></textarea>
-  <div class="row"><label>Mode</label><select id="mode"><option value="scroll">Slow scroll</option><option value="chunk">Phrase by phrase</option></select></div>
-  <div class="row"><label>Speed</label><input id="speed" type="range" min="10" max="150" value="45"><span id="speedV"></span></div>
-  <div class="row"><label>Text size</label><input id="size" type="range" min="18" max="56" value="30"><span id="sizeV"></span></div>
-  <button class="primary" id="go">Open camera</button>
+  <header>
+    <img src="/icon.svg" alt="">
+    <div><h1>Prompter</h1><p>Your words, right under the lens.</p></div>
+  </header>
+  <div class="sheet">
+    <textarea id="script" aria-label="Script" placeholder="Paste or type your script. It saves on this phone as you go."></textarea>
+    <div class="meta" id="meta">No script yet</div>
+  </div>
+  <div class="controls">
+    <div class="ctl"><span>Mode</span>
+      <div class="seg" role="radiogroup" aria-label="Mode">
+        <input type="radio" name="mode" id="m-scroll" value="scroll"><label for="m-scroll">Scroll</label>
+        <input type="radio" name="mode" id="m-chunk" value="chunk"><label for="m-chunk">Phrases</label>
+      </div></div>
+    <div class="ctl"><label for="speed">Speed</label><input id="speed" type="range" min="10" max="150" value="45"><output id="speedV"></output></div>
+    <div class="ctl"><label for="size">Text size</label><input id="size" type="range" min="18" max="56" value="30"><output id="sizeV"></output></div>
+  </div>
+  <button class="go" id="go">Open camera</button>
 </section>
 
 <section id="rec" class="hide">
   <video id="cam" autoplay playsinline muted></video>
-  <div id="prompt"><div id="text"></div></div>
-  <div id="chunk" class="hide"></div>
-  <div id="timer" class="hide">0:00</div>
-  <div id="count" class="hide"></div>
+  <div id="prompt" class="glass"><div id="text"></div></div>
+  <div id="chunk" class="glass hide"></div>
+  <div id="timer" class="glass hide">0:00</div>
+  <div id="count" class="hide"><span class="glass"></span></div>
   <div id="bar">
-    <button class="ghost" id="back">Edit</button>
-    <button id="recBtn" aria-label="Record"><i></i></button>
-    <button class="ghost" id="pause">Pause</button>
+    <button class="pill glass" id="back">Edit</button>
+    <button id="recBtn" aria-label="Start recording"><i></i></button>
+    <button class="pill glass" id="pause">Pause</button>
   </div>
+  <div id="progress"></div>
 </section>
 
 <section id="done" class="hide">
+  <h2>Nice take</h2>
   <video id="out" controls playsinline></video>
-  <button class="primary" id="save">Save / Share video</button>
+  <button class="go" id="save">Save video</button>
   <button class="sec" id="again">Record again</button>
 </section>
 
 <script>
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-const script=$('script'),speed=$('speed'),size=$('size'),text=$('text'),mode=$('mode'),chunkEl=$('chunk');
-mode.value=store.get('mode')||'scroll';
+const script=$('script'),speed=$('speed'),size=$('size'),text=$('text'),chunkEl=$('chunk');
+const mode={get value(){return document.querySelector('input[name=mode]:checked').value},set value(v){(document.querySelector(`input[name=mode][value="${v}"]`)||$('m-scroll')).checked=true}};
 script.value=store.get('script')||'';
-speed.value=store.get('speed')||45; size.value=store.get('size')||30;
-const sync=()=>{$('speedV').textContent=speed.value;$('sizeV').textContent=size.value;text.style.fontSize=size.value+'px';chunkEl.style.fontSize=size.value+'px';store.set('mode',mode.value);
-  store.set('script',script.value);store.set('speed',speed.value);store.set('size',size.value)};
-[script,speed,size,mode].forEach(e=>e.addEventListener('input',sync));sync();
+speed.value=store.get('speed')||45;size.value=store.get('size')||30;mode.value=store.get('mode')||'scroll';
+function sync(){
+  $('speedV').textContent=speed.value;$('sizeV').textContent=size.value;
+  text.style.fontSize=chunkEl.style.fontSize=size.value+'px';
+  const n=script.value.trim()?script.value.trim().split(/\s+/).length:0,secs=Math.round(n/(speed.value*3/60));
+  $('meta').textContent=n?`${n} words, about ${Math.floor(secs/60)}:${String(secs%60).padStart(2,'0')} at this speed`:'No script yet';
+  store.set('script',script.value);store.set('speed',speed.value);store.set('size',size.value);store.set('mode',mode.value);
+}
+[script,speed,size].forEach(e=>e.addEventListener('input',sync));
+document.querySelectorAll('input[name=mode]').forEach(e=>e.addEventListener('change',sync));sync();
 
-let chunks2=[],ci=0,ct,stream,rec,chunks=[],blob,y=0,scrolling=false,last=0,t0=0,tick;
+let chunks2=[],ci=0,ct,stream,rec,parts=[],blob,y=0,scrolling=false,last=0,t0=0,tick;
 function show(id){['edit','rec','done'].forEach(s=>$(s).classList.toggle('hide',s!==id))}
 
 $('go').onclick=async()=>{
   if(!script.value.trim()){script.focus();return}
   text.textContent=script.value;chunks2=makeChunks(script.value);
   const c=mode.value==='chunk';$('prompt').classList.toggle('hide',c);chunkEl.classList.toggle('hide',!c);
-  try{
-    stream=stream||await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1080},height:{ideal:1920}},audio:true});
-  }catch(e){alert('Camera/mic permission needed: '+e.message);return}
-  $('cam').srcObject=stream; resetScroll(); show('rec');
+  try{stream=stream||await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1080},height:{ideal:1920}},audio:true})}
+  catch(e){$('meta').textContent='Camera and microphone access is needed. Allow it in your browser settings, then try again.';return}
+  $('cam').srcObject=stream;resetScroll();show('rec');
 };
-
 function makeChunks(s){const out=[];let cur=[];
   for(const w of s.replace(/\s+/g,' ').trim().split(' ')){cur.push(w);
-    if(cur.length>=4||(cur.length>=2&&/[.,!?;:\u2014-]$/.test(w))){out.push(cur.join(' '));cur=[]}}
+    if(cur.length>=4||(cur.length>=2&&/[.,!?;:—-]$/.test(w))){out.push(cur.join(' '));cur=[]}}
   if(cur.length)out.push(cur.join(' '));return out}
-function showChunk(){chunkEl.textContent=chunks2[ci]||''}
+function setProgress(f){$('progress').style.width=Math.min(100,f*100)+'%'}
+function showChunk(){chunkEl.textContent=chunks2[ci]||'';setProgress(chunks2.length?(ci+1)/chunks2.length:0)}
 function nextChunk(){if(!scrolling)return;const c=chunks2[ci]||'';
   const ms=c.split(' ').length/(speed.value*3/60)*1000+(/[.!?]$/.test(c)?350:/[,;:]$/.test(c)?150:0);
   ct=setTimeout(()=>{if(!scrolling)return;if(ci<chunks2.length-1){ci++;showChunk();nextChunk()}},ms)}
-function resetScroll(){y=0;text.style.transform='translateY(0)';ci=0;showChunk()}
+function maxY(){return Math.max(0,text.scrollHeight-$('prompt').clientHeight*0.6)}
+function resetScroll(){y=0;text.style.transform='translateY(0)';ci=0;showChunk();if(mode.value==='scroll')setProgress(0)}
 function loop(ts){
   if(!scrolling)return;
   const dt=last?(ts-last)/1000:0;last=ts;
-  y+=dt*speed.value;
-  const max=text.scrollHeight-$('prompt').clientHeight*0.6;
-  if(y>max)y=max;
-  text.style.transform=`translateY(${-y}px)`;
+  y=Math.min(y+dt*speed.value,maxY());
+  text.style.transform=`translateY(${-y}px)`;setProgress(y/(maxY()||1));
   requestAnimationFrame(loop);
 }
 function setScroll(on){scrolling=on;last=0;clearTimeout(ct);$('pause').textContent=on?'Pause':'Play';if(on){mode.value==='chunk'?nextChunk():requestAnimationFrame(loop)}}
 $('pause').onclick=()=>setScroll(!scrolling);
-// drag prompt to adjust position
 let dragY=null;
 $('prompt').addEventListener('touchstart',e=>{dragY=e.touches[0].clientY},{passive:true});
-$('prompt').addEventListener('touchmove',e=>{const ny=e.touches[0].clientY;y=Math.max(0,y-(ny-dragY));dragY=ny;text.style.transform=`translateY(${-y}px)`},{passive:true});
+$('prompt').addEventListener('touchmove',e=>{const ny=e.touches[0].clientY;y=Math.min(maxY(),Math.max(0,y-(ny-dragY)));dragY=ny;text.style.transform=`translateY(${-y}px)`},{passive:true});
 
 function pickType(){
   for(const t of['video/mp4;codecs=avc1,mp4a','video/mp4','video/webm;codecs=vp9,opus','video/webm'])
@@ -129,7 +178,7 @@ function pickType(){
 }
 async function countdown(){
   const c=$('count');c.classList.remove('hide');
-  for(let i=3;i>0;i--){c.textContent=i;await new Promise(r=>setTimeout(r,1000))}
+  for(let i=3;i>0;i--){c.firstElementChild.textContent=i;await new Promise(r=>setTimeout(r,1000))}
   c.classList.add('hide');
 }
 $('recBtn').onclick=async()=>{
@@ -138,15 +187,15 @@ $('recBtn').onclick=async()=>{
   await countdown();
   const type=pickType();
   rec=new MediaRecorder(stream,type?{mimeType:type,videoBitsPerSecond:8e6}:undefined);
-  chunks=[];
-  rec.ondataavailable=e=>e.data.size&&chunks.push(e.data);
+  parts=[];
+  rec.ondataavailable=e=>e.data.size&&parts.push(e.data);
   rec.onstop=()=>{
-    clearInterval(tick);setScroll(false);$('recBtn').classList.remove('on');$('timer').classList.add('hide');
-    blob=new Blob(chunks,{type:rec.mimeType||type||'video/mp4'});
+    clearInterval(tick);setScroll(false);$('recBtn').classList.remove('on');$('recBtn').setAttribute('aria-label','Start recording');$('timer').classList.add('hide');
+    blob=new Blob(parts,{type:rec.mimeType||type||'video/mp4'});
     $('out').src=URL.createObjectURL(blob);show('done');
   };
   rec.start(1000);
-  $('recBtn').classList.add('on');
+  $('recBtn').classList.add('on');$('recBtn').setAttribute('aria-label','Stop recording');
   t0=Date.now();$('timer').classList.remove('hide');$('timer').textContent='0:00';
   tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`},500);
   setScroll(true);
