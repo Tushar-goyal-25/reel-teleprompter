@@ -36,7 +36,7 @@ textarea::placeholder{color:#C2B3BF}
 .ctl{display:flex;align-items:center;gap:12px;min-height:52px}
 .ctl+.ctl{border-top:1px solid var(--line)}
 .ctl label,.ctl>span:first-child{width:78px;font-size:15px;color:var(--muted)}
-.ctl output{width:32px;text-align:right;font-variant-numeric:tabular-nums;font-size:15px}
+.ctl output{width:104px;flex:none;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-size:15px}
 input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:28px;background:transparent}
 input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:3px;background:linear-gradient(90deg,#F2917F,#D879B4 var(--p,50%),#F3E2E3 var(--p,50%))}
 input[type=range]::-moz-range-track{height:6px;border-radius:3px;background:linear-gradient(90deg,#F2917F,#D879B4 var(--p,50%),#F3E2E3 var(--p,50%))}
@@ -131,7 +131,7 @@ const mode={get value(){return document.querySelector('input[name=mode]:checked'
 script.value=store.get('script')||'';
 speed.value=store.get('speed')||45;size.value=store.get('size')||30;mode.value=store.get('mode')||'scroll';
 function sync(){
-  $('speedV').textContent=speed.value;$('sizeV').textContent=size.value;
+  $('speedV').textContent=speed.value*3+' words/min';const z=+size.value;$('sizeV').textContent=z<24?'Small':z<34?'Medium':z<44?'Large':'Extra large';
   text.style.fontSize=chunkEl.style.fontSize=size.value+'px';
   [speed,size].forEach(r=>r.style.setProperty('--p',(r.value-r.min)/(r.max-r.min)*100+'%'));
   const n=script.value.trim()?script.value.trim().split(/\s+/).length:0,secs=Math.round(n/(speed.value*3/60));
