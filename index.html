@@ -6,12 +6,16 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#000">
 <title>Prompter</title>
+<meta name="description" content="Teleprompter for recording reels on your phone">
+<link rel="icon" href="/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;background:#000;color:#fff;font-family:-apple-system,system-ui,sans-serif;overflow:hidden}
 .hide{display:none!important}
 #edit{height:100%;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px)}
-h1{font-size:22px;margin-bottom:12px}
+h1{font-size:22px;margin-bottom:12px;display:flex;align-items:center;gap:10px}h1 img{width:34px;height:34px;border-radius:9px}
 textarea{flex:1;width:100%;background:#111;color:#fff;border:1px solid #333;border-radius:12px;padding:14px;font-size:17px;resize:none;outline:none}
 .row{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:15px}
 .row label{width:70px;color:#aaa}
@@ -21,16 +25,18 @@ button{font:inherit;border:0;border-radius:12px;cursor:pointer}
 .primary{margin-top:16px;padding:16px;background:#ff3b30;color:#fff;font-size:18px;font-weight:600;width:100%}
 #rec{position:fixed;inset:0}
 video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}
-#prompt{position:absolute;top:0;left:0;right:0;height:38%;padding-top:env(safe-area-inset-top);background:linear-gradient(#000c 70%,#0000);overflow:hidden;
- -webkit-mask-image:linear-gradient(#0000,#000 15%,#000 80%,#0000);mask-image:linear-gradient(#0000,#000 15%,#000 80%,#0000)}
-#text{padding:40% 22px 100%;font-weight:600;line-height:1.35;white-space:pre-wrap;will-change:transform}
+#prompt{position:absolute;top:0;left:0;right:0;height:24%;padding-top:env(safe-area-inset-top);background:linear-gradient(#000b 75%,#0000);overflow:hidden;
+ -webkit-mask-image:linear-gradient(#0003,#000 35%,#000 55%,#0003);mask-image:linear-gradient(#0003,#000 35%,#000 55%,#0003)}
+#text{max-width:min(72vw,300px);margin:0 auto;text-align:center;padding:12vh 0 100vh;font-weight:600;line-height:1.35;white-space:pre-wrap;will-change:transform}
 #bar{position:absolute;bottom:0;left:0;right:0;padding:16px 20px calc(env(safe-area-inset-bottom) + 20px);display:flex;align-items:center;justify-content:space-between}
 .ghost{background:#0008;color:#fff;padding:12px 14px;font-size:15px;min-width:70px}
 #recBtn{width:76px;height:76px;border-radius:50%;border:5px solid #fff;background:transparent;display:grid;place-items:center}
 #recBtn i{display:block;width:56px;height:56px;border-radius:50%;background:#ff3b30;transition:.2s}
 #recBtn.on i{width:30px;height:30px;border-radius:8px}
 #count{position:absolute;inset:0;display:grid;place-items:center;font-size:120px;font-weight:700;text-shadow:0 4px 20px #000;pointer-events:none}
-#timer{position:absolute;top:calc(38% + 8px);left:50%;transform:translateX(-50%);background:#ff3b30;padding:4px 10px;border-radius:8px;font-size:14px;font-variant-numeric:tabular-nums}
+#timer{position:absolute;bottom:calc(env(safe-area-inset-bottom) + 112px);left:50%;transform:translateX(-50%);background:#ff3b30;padding:4px 10px;border-radius:8px;font-size:14px;font-variant-numeric:tabular-nums}
+#chunk{position:absolute;top:calc(env(safe-area-inset-top) + 20px);left:50%;transform:translateX(-50%);width:min(78vw,320px);text-align:center;font-weight:700;line-height:1.25;background:#000b;border-radius:14px;padding:10px 14px;min-height:1.5em}
+select{flex:1;background:#111;color:#fff;border:1px solid #333;border-radius:8px;padding:8px;font-size:15px}
 #done{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top) + 16px) 16px calc(env(safe-area-inset-bottom) + 16px);gap:12px}
 #done video{position:static;transform:none;flex:1;min-height:0;object-fit:contain;border-radius:12px;background:#111}
 #done .primary{margin:0}
@@ -40,8 +46,9 @@ video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transfor
 <body>
 
 <section id="edit">
-  <h1>Prompter</h1>
+  <h1><img src="/icon.svg" alt="">Prompter</h1>
   <textarea id="script" placeholder="Paste your reel script here…"></textarea>
+  <div class="row"><label>Mode</label><select id="mode"><option value="scroll">Slow scroll</option><option value="chunk">Phrase by phrase</option></select></div>
   <div class="row"><label>Speed</label><input id="speed" type="range" min="10" max="150" value="45"><span id="speedV"></span></div>
   <div class="row"><label>Text size</label><input id="size" type="range" min="18" max="56" value="30"><span id="sizeV"></span></div>
   <button class="primary" id="go">Open camera</button>
@@ -50,6 +57,7 @@ video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transfor
 <section id="rec" class="hide">
   <video id="cam" autoplay playsinline muted></video>
   <div id="prompt"><div id="text"></div></div>
+  <div id="chunk" class="hide"></div>
   <div id="timer" class="hide">0:00</div>
   <div id="count" class="hide"></div>
   <div id="bar">
@@ -68,26 +76,36 @@ video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transfor
 <script>
 const $=id=>document.getElementById(id);
 const store={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}}};
-const script=$('script'),speed=$('speed'),size=$('size'),text=$('text');
+const script=$('script'),speed=$('speed'),size=$('size'),text=$('text'),mode=$('mode'),chunkEl=$('chunk');
+mode.value=store.get('mode')||'scroll';
 script.value=store.get('script')||'';
 speed.value=store.get('speed')||45; size.value=store.get('size')||30;
-const sync=()=>{$('speedV').textContent=speed.value;$('sizeV').textContent=size.value;text.style.fontSize=size.value+'px';
+const sync=()=>{$('speedV').textContent=speed.value;$('sizeV').textContent=size.value;text.style.fontSize=size.value+'px';chunkEl.style.fontSize=size.value+'px';store.set('mode',mode.value);
   store.set('script',script.value);store.set('speed',speed.value);store.set('size',size.value)};
-[script,speed,size].forEach(e=>e.addEventListener('input',sync));sync();
+[script,speed,size,mode].forEach(e=>e.addEventListener('input',sync));sync();
 
-let stream,rec,chunks=[],blob,y=0,scrolling=false,last=0,t0=0,tick;
+let chunks2=[],ci=0,ct,stream,rec,chunks=[],blob,y=0,scrolling=false,last=0,t0=0,tick;
 function show(id){['edit','rec','done'].forEach(s=>$(s).classList.toggle('hide',s!==id))}
 
 $('go').onclick=async()=>{
   if(!script.value.trim()){script.focus();return}
-  text.textContent=script.value;
+  text.textContent=script.value;chunks2=makeChunks(script.value);
+  const c=mode.value==='chunk';$('prompt').classList.toggle('hide',c);chunkEl.classList.toggle('hide',!c);
   try{
     stream=stream||await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:1080},height:{ideal:1920}},audio:true});
   }catch(e){alert('Camera/mic permission needed: '+e.message);return}
   $('cam').srcObject=stream; resetScroll(); show('rec');
 };
 
-function resetScroll(){y=0;text.style.transform='translateY(0)'}
+function makeChunks(s){const out=[];let cur=[];
+  for(const w of s.replace(/\s+/g,' ').trim().split(' ')){cur.push(w);
+    if(cur.length>=4||(cur.length>=2&&/[.,!?;:\u2014-]$/.test(w))){out.push(cur.join(' '));cur=[]}}
+  if(cur.length)out.push(cur.join(' '));return out}
+function showChunk(){chunkEl.textContent=chunks2[ci]||''}
+function nextChunk(){if(!scrolling)return;const c=chunks2[ci]||'';
+  const ms=c.split(' ').length/(speed.value*3/60)*1000+(/[.!?]$/.test(c)?350:/[,;:]$/.test(c)?150:0);
+  ct=setTimeout(()=>{if(!scrolling)return;if(ci<chunks2.length-1){ci++;showChunk();nextChunk()}},ms)}
+function resetScroll(){y=0;text.style.transform='translateY(0)';ci=0;showChunk()}
 function loop(ts){
   if(!scrolling)return;
   const dt=last?(ts-last)/1000:0;last=ts;
@@ -97,7 +115,7 @@ function loop(ts){
   text.style.transform=`translateY(${-y}px)`;
   requestAnimationFrame(loop);
 }
-function setScroll(on){scrolling=on;last=0;$('pause').textContent=on?'Pause':'Play';if(on)requestAnimationFrame(loop)}
+function setScroll(on){scrolling=on;last=0;clearTimeout(ct);$('pause').textContent=on?'Pause':'Play';if(on){mode.value==='chunk'?nextChunk():requestAnimationFrame(loop)}}
 $('pause').onclick=()=>setScroll(!scrolling);
 // drag prompt to adjust position
 let dragY=null;
