@@ -188,8 +188,8 @@ function resetScroll(){
   setScroll(false);
   const prompt=$('prompt'),line=parseFloat(getComputedStyle(text).lineHeight),safeTop=parseFloat(getComputedStyle(prompt).paddingTop);
   text.style.paddingTop=Math.max(0,(prompt.clientHeight-safeTop-line)/2)+'px';
-  // Preview below the reading zone, then bring line one up during the countdown.
-  y=mode.value==='scroll'?-prompt.clientHeight/2:0;
+  // Keep line one in the reading zone until recording starts.
+  y=0;
   text.style.transform=`translateY(${-y}px)`;ci=0;showChunk();setProgress(0);
 }
 function loop(ts){
@@ -220,10 +220,8 @@ $('recBtn').onclick=async()=>{
   if(rec&&rec.state==='recording'){$('recBtn').disabled=true;setScroll(false);rec.stop();return}
   starting=true;$('recBtn').disabled=true;$('back').disabled=true;$('pause').disabled=true;
   $('recStatus').classList.add('hide');resetScroll();
-  const intro=mode.value==='scroll'?text.animate([{transform:`translateY(${-y}px)`},{transform:'translateY(0)'}],{duration:3000,fill:'forwards',easing:'ease-out'}):null;
   try{
     await countdown();
-    y=0;text.style.transform='translateY(0)';intro?.cancel();
     const type=pickType();
     rec=new MediaRecorder(stream,type?{mimeType:type,videoBitsPerSecond:8e6}:undefined);
     const recorder=rec;parts=[];let failed=false;
@@ -241,7 +239,7 @@ $('recBtn').onclick=async()=>{
     t0=Date.now();$('timer').classList.remove('hide');$('timer').textContent='0:00';
     tick=setInterval(()=>{const s=Math.floor((Date.now()-t0)/1000);$('timer').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`},500);
     $('pause').disabled=false;setScroll(true);
-  }catch(e){intro?.cancel();recordingError()}
+  }catch(e){recordingError()}
   finally{starting=false;$('recBtn').disabled=false;if(rec?.state!=='recording')$('back').disabled=false}
 };
 function resetRecordingControls(){

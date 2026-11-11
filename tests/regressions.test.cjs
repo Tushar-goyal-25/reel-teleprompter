@@ -36,6 +36,11 @@ function page(){
   Object.assign(elements.size,{value:'30',min:'18',max:'56'});
   const modes=[elements['m-scroll'],elements['m-chunk']];
   modes[0].value='scroll';modes[1].value='chunk';
+  // Match radio buttons: selecting one clears the other selection.
+  let selectedMode;
+  for(const mode of modes)Object.defineProperty(mode,'checked',{
+    get:()=>selectedMode===mode,set:on=>{if(on)selectedMode=mode;else if(selectedMode===mode)selectedMode=undefined}
+  });
   document.getElementById=id=>elements[id];
   document.querySelectorAll=()=>modes;
   document.querySelector=s=>s.includes(':checked')?modes.find(e=>e.checked):modes.find(e=>s.includes(`"${e.value}"`));
@@ -88,19 +93,48 @@ test('editor follows keyboard height and pan while preserving typed and pasted s
   assert.equal(p.context.document.documentElement.style['--viewport-height'],'844px');
 });
 
-test('camera preview stays idle, countdown positions line one, repeated starts are ignored',async()=>{
-  const p=page();await p.open();
-  assert.equal(p.state('scrolling'),false);assert.equal(p.e.pause.disabled,true);
-  assert.ok(p.state('y')<0);assert.equal(p.frames.size,0);
-  p.context.countdown=()=>new Promise(r=>{p.context.finishCountdown=r});
-  const pending=p.e.recBtn.onclick();
-  assert.equal(p.e.recBtn.disabled,true);assert.equal(p.e.back.disabled,true);
-  await p.e.recBtn.onclick();assert.equal(p.recorders.length,0);
-  assert.equal(p.e.text.animation.keyframes[1].transform,'translateY(0)');
-  p.context.finishCountdown();await pending;
-  assert.equal(p.recorders.length,1);assert.equal(p.state('y'),0);
-  assert.equal(p.state('scrolling'),true);assert.equal(p.frames.size,1);
-});
+for(const mode of ['scroll','chunk']){
+  test(`${mode} stays still through every countdown second, then records and moves`,async()=>{
+    const p=page();await p.open(mode);
+    assert.equal(p.state('scrolling'),false);assert.equal(p.e.pause.disabled,true);
+    assert.equal(p.state('y'),0);assert.equal(p.frames.size,0);
+    const first=p.e.chunk.textContent,transform=p.e.text.style.transform;
+    const timers=[];
+    p.context.setTimeout=(fn,ms)=>{timers.push({fn,ms});return timers.length};
+    // Restore the real countdown so each of its three seconds is exercised.
+    p.state(source.match(/async function countdown\(\)\{[\s\S]*?\n\}/)[0]);
+    const pending=p.e.recBtn.onclick();
+    for(const second of [3,2,1]){
+      assert.equal(p.e.count.firstElementChild.textContent,second);
+      assert.equal(p.e.count.classList.contains('hide'),false);
+      assert.equal(p.e.recBtn.disabled,true);assert.equal(p.e.back.disabled,true);
+      assert.equal(p.e.pause.disabled,true);assert.equal(p.e.timer.classList.contains('hide'),true);
+      await p.e.recBtn.onclick();assert.equal(p.recorders.length,0);
+      assert.equal(p.state('scrolling'),false);assert.equal(p.frames.size,0);
+      assert.equal(p.e.text.animation,undefined);
+      assert.equal(p.e.text.style.transform,transform);assert.equal(p.e.chunk.textContent,first);
+      assert.equal(timers.length,1);
+      const timer=timers.shift();assert.equal(timer.ms,1000);timer.fn();
+      await Promise.resolve();
+    }
+    await pending;
+    assert.equal(p.e.count.classList.contains('hide'),true);
+    assert.equal(p.recorders.length,1);assert.equal(p.recorders[0].state,'recording');
+    assert.equal(p.e.timer.classList.contains('hide'),false);assert.equal(p.e.pause.disabled,false);
+    assert.equal(p.state('y'),0);assert.equal(p.state('scrolling'),true);
+    if(mode==='scroll'){
+      assert.equal(p.frames.size,1);
+      for(const ts of [1000,2000]){
+        const [id,fn]=p.frames.entries().next().value;p.frames.delete(id);fn(ts);
+      }
+      assert.ok(p.state('y')>0);
+    }else{
+      assert.equal(timers.length,1);timers.shift().fn();
+      assert.notEqual(p.e.chunk.textContent,first);
+    }
+    await p.stop();
+  });
+}
 
 test('pause/resume cancels the old animation loop',async()=>{
   const p=page();await p.open();await p.record();
