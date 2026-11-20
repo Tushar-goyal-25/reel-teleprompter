@@ -18,7 +18,8 @@ function page(){
   function element(id,classes=''){
     const classSet=new Set(classes.split(' ').filter(Boolean));
     const e={id,value:'',style:{setProperty(k,v){this[k]=v}},disabled:false,checked:false,
-      textContent:'',clientHeight:200,scrollHeight:400,firstElementChild:{},listeners:{},
+      textContent:'',clientHeight:200,scrollHeight:400,
+      firstElementChild:{textContent:'',classList:{add(){},remove(){},contains:()=>false,toggle(){}}},listeners:{},
       classList:{add:c=>classSet.add(c),remove:c=>classSet.delete(c),contains:c=>classSet.has(c),
         toggle(c,on){if(on??!classSet.has(c))classSet.add(c);else classSet.delete(c)}},
       addEventListener(name,fn){this.listeners[name]=fn},
